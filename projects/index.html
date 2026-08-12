@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Projects | [Your Name]</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Projects" />
+<meta name="author" content="[Your Name]" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab." />
+<meta property="og:description" content="Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab." />
+<link rel="canonical" href="https://dev-sherlock.github.io/projects/" />
+<meta property="og:url" content="https://dev-sherlock.github.io/projects/" />
+<meta property="og:site_name" content="[Your Name]" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Projects" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","author":{"@type":"Person","name":"[Your Name]"},"description":"Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab.","headline":"Projects","url":"https://dev-sherlock.github.io/projects/"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+<link rel="stylesheet" href="/assets/css/main.css">
+  </head>
+  <body>
+    <header class="site-header">
+  <nav class="container nav" aria-label="Main navigation">
+    <a class="nav-brand" href="/">
+      <span class="brand-mark">&gt;_</span>
+      <span>[Your Name]</span>
+    </a>
+    <ul class="nav-links">
+      
+        
+        
+      <li><a href="/" >About</a></li>
+      
+        
+        
+      <li><a href="/projects/" aria-current="page">Projects</a></li>
+      
+        
+        
+      <li><a href="/writeups/" >Writeups</a></li>
+      
+        
+        
+      <li><a href="/blog/" >Blog</a></li>
+      
+        
+        
+      <li><a href="/skills/" >Skills</a></li>
+      
+        
+        
+      <li><a href="/contact/" >Contact</a></li>
+      
+    </ul>
+  </nav>
+</header>
+    <main class="container site-main" id="main">
+      <article class="page">
+  
+  <header class="page-header">
+    <h1>Projects</h1>
+    <p class="page-subtitle">Documents hands-on work — labs, tooling, and experiments. Every entry follows a problem → approach → results shape.</p>
+  </header>
+  
+  <div class="page-content">
+    <div class="project-list">
+  
+  <article class="project-card card">
+    <div class="card-head">
+      <h2>Home Lab: SOC-in-a-Box</h2>
+      <a class="repo-link" href="https://github.com/yourusername/soc-lab" rel="noopener">GitHub ↗</a>
+    </div>
+    <p class="project-summary">A self-hosted security operations lab built to practice detection and response: pfSense segmented the network, Wazuh/ELK collected telemetry, and Kali/Parrot acted as the red team side.
+</p>
+    
+    <ul class="project-highlights">
+      <li>Configured ingest pipelines for Windows Sysmon and Linux auditd logs</li><li>Wrote custom Suricata rules that alerted on Kerberoasting traffic</li><li>Practiced IR: triaged alerts, contained a simulated beacon, wrote the report</li>
+    </ul>
+    
+    
+    <ul class="tags" aria-label="Tags"><li class="tag">Blue Team</li><li class="tag">SIEM</li><li class="tag">Detection</li><li class="tag">Lab</li></ul>
+    
+  </article>
+  
+  <article class="project-card card">
+    <div class="card-head">
+      <h2>Recon Automator</h2>
+      <a class="repo-link" href="https://github.com/yourusername/recon-automator" rel="noopener">GitHub ↗</a>
+    </div>
+    <p class="project-summary">A Python CLI that wraps subdomain enumeration, port scanning, and HTTP fingerprinting into one pipeline and writes a tidy report — my standard starting point for CTF machines and authorized assessments.
+</p>
+    
+    <ul class="project-highlights">
+      <li>Async port scanning with a custom TCP connect scanner (~200ms for a /16 sweep test)</li><li>Merges output from sublist3r, amass, and nmap into a single JSON report</li><li>Idempotent and fully offline-capable for lab use</li>
+    </ul>
+    
+    
+    <ul class="tags" aria-label="Tags"><li class="tag">Python</li><li class="tag">Offensive</li><li class="tag">Automation</li></ul>
+    
+  </article>
+  
+  <article class="project-card card">
+    <div class="card-head">
+      <h2>CTF Notes Utility</h2>
+      <a class="repo-link" href="https://github.com/yourusername/ctf-notes" rel="noopener">GitHub ↗</a>
+    </div>
+    <p class="project-summary">A small Obsidian-style note organizer for CTF progress: machine metadata, flags, and walking notes export to Markdown for publishing writeups.
+</p>
+    
+    <ul class="project-highlights">
+      <li>Front-matter-first: platform, difficulty, tags flow straight into site writeups</li><li>One-command export hooked into this repo's _writeups/ folder</li>
+    </ul>
+    
+    
+    <ul class="tags" aria-label="Tags"><li class="tag">Productivity</li><li class="tag">CTF</li></ul>
+    
+  </article>
+  
+</div>
+
+<p class="muted-note">
+  Keeping a few documented projects consistently beats a long list of
+  half-finished ones. Add more entries in <code>_data/projects.yml</code>.
+</p>
+  </div>
+</article>
+    </main>
+    <footer class="site-footer">
+  <div class="container footer-inner">
+    <p class="footer-tag">Personal site of a security-focused developer and recent CS graduate. Projects, CTF writeups, and notes from the home lab.</p>
+    <ul class="footer-social">
+      
+      <li><a href="mailto:you@example.com" rel="me noopener">Email</a></li>
+      
+      <li><a href="https://github.com/yourusername" rel="me noopener">GitHub</a></li>
+      
+      <li><a href="https://www.linkedin.com/in/yourusername" rel="me noopener">LinkedIn</a></li>
+      
+      <li><a href="https://app.hackthebox.com/profile/yourid" rel="me noopener">HackTheBox</a></li>
+      
+      <li><a href="https://tryhackme.com/p/yourusername" rel="me noopener">TryHackMe</a></li>
+      
+    </ul>
+    <p class="footer-copy">© 2026 [Your Name] · Built with Jekyll · Hosted on GitHub Pages</p>
+  </div>
+</footer>
+  </body>
+</html>
